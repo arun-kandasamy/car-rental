@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package carrental;
+
+option go_package = "github.com/example/car-rental-service/proto/generated/carrental";
+import "policy.proto";
+
+message Car {
+  string model = 1;
+  string transmission = 2;
+  string color = 3;
+  string registration_id = 4;
+  string garage_id = 5 [(policy.validate) = {required : true}];
+}
+
+// START OMIT
+service CarRentalService {
+  rpc ListCarAvailability(ListCarAvailabilityRequest) returns (ListCarAvailabilityResponse) {}
+
+  rpc GetQuote(GetQuoteRequest) returns (GetQuoteResponse) {}
+  
+  rpc ReserveCar(ReserveCarRequest) returns (Car) {}
+}
+//END OMIT
+
+// STARTREP1 OMIT
+message ListCarAvailabilityRequest {
+  string model = 1;
+  string transmission = 2;
+  string garage_id = 3 [(policy.validate) = {required : true}];
+  uint64 duration_hours = 4;
+}
+// ENDREP1 OMIT
+
+
+message ListCarAvailabilityResponse {
+  repeated Car cars = 1;
+}
+
+// STARTREP2 OMIT
+message GetQuoteRequest {
+  string car_id = 1 [(policy.validate) = {required : true}];
+  string garage_id = 2 [(policy.validate) = {required : true}];
+  uint64 duration_hours = 3;
+}
+// ENDREP2 OMIT
+
+message Quote {
+  Car car = 1;
+  double prince_in_usd = 2;
+}
+
+message GetQuoteResponse {
+  repeated Quote quotes = 1;
+}
+
+// STARTREP3 OMIT
+// STARTPOLICY OMIT
+message ReserveCarRequest {
+  // STARTHLPOLICY OMIT
+  string car_id = 1 [(policy.validate) = {required : true, type: "car", length: 5}];
+  // ENDHLPOLICY OMIT
+  string garage_id = 2 [(policy.validate) = {required : true}];
+  uint64 duration_hours = 3;
+}
+// ENDPOLICY OMIT
+// ENDREP3 OMIT

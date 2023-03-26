@@ -1,0 +1,124 @@
+Service request validations
+30 March 2023
+
+Arun Kandasamy
+EDB
+arun.kandasamy@enterprisedb.com
+
+
+* Story 
+
+Help gopher to 
+.image images/gopher_at_car_rental.png 300 300
+Rent his favourite car using our Car rental service!
+
+
+* Car Rental Service
+
+.code ../proto/carrental.proto /^//START OMIT/,/^//END OMIT/
+- List of favourite cars available from the Garage
+- Get quote for his favourite car, given a time duration
+- Reserve the car from the garage
+
+
+* Basic validations
+
+- checking for required fields
+- validating field types
+- checking for length or range limits
+
+
+Example:
+
+    message GetQuoteRequest {
+        string car_id = 1;
+        string garage_id = 2;
+        uint64 duration_hours = 3;
+    }
+
+`garage_id` is `gar_123456`
+ prefix _gar__  followed by 6 numbers, total length of 10 bytes
+
+
+*  Basic validations - 1
+
+Checking for required fields 
+.code ../server/list_car.go /^//START/,/^//END/ HL_MANDATORY
+
+`GarageId` is a *mandatory* field
+
+*  Basic validations - 2
+
+Check format or type
+.code ../server/list_car.go /^//START/,/^//END/ HL_FORMAT
+
+`GarageId` is a *mandatory* field and should be of the *format* _gar__
+
+
+* Repetitive 
+
+    message ListCarAvailabilityRequest {
+        string model = 1;
+        string transmission = 2;
+        string garage_id = 3;
+        uint64 duration_hours = 4;
+    }
+
+    message GetQuoteRequest {
+        string car_id = 1;
+        string garage_id = 2;
+        uint64 duration_hours = 3;
+    }
+
+    message ReserveCarRequest {
+        string car_id = 1;
+        string garage_id = 2;
+        uint64 duration_hours = 3;
+    }
+
+
+`garage_id` and `car_id` are everywhere!
+
+* Validation stages
+.image images/validations.jpg
+
+* Proto annotations
+
+Extend field options allow us to add custom functionality to fields
+.code ../proto/policy.proto /^//STARTPOLICY OMIT/,/^//ENDPOLICY OMIT/
+.code ../proto/carrental.proto /^//STARTPOLICY OMIT/,/^//ENDPOLICY OMIT/
+.link https://protobuf.dev/programming-guides/proto3/#assigning-field-numbers some reserved field numbers!
+
+* Middleware 
+.image images/validator_chain.png
+.code ../proto/carrental.proto /^//STARTHLPOLICY OMIT/,/^//ENDHLPOLICY OMIT/
+
+    func (s *CarRentalServiceServer) ListCarAvailability(ctx context.Context,
+        req *pb.ListCarAvailabilityRequest) (*pb.ListCarAvailabilityResponse, error) {
+
+            // BUSINESS LOGIC HERE!
+            return &pb.ListCarAvailabilityResponse{}, nil
+    }
+
+* Code Walk & Demo
+.image images/cursor.gif 300 900
+
+Source Code
+.link https://github.com/arun-kandasamy/car-rental.git
+
+* Summarize
+- Consistent or Centralized validation
+- Reusability, fewer code duplication
+- Better separations and performance(?)
+
+Option on the table
+.link https://github.com/bufbuild/protoc-gen-validate - protoc-gen-validate
+- still in alpha mode
+- deal with XXX_validate.go generations for each proto
+- base proto was still using proto2
+- less control with the error on failed validations (not so user-friendly)
+.image images/gopher_bazooka.png 100 100
+
+
+* Questions
+.image images/on_vacation_gopher.png 400 400
