@@ -7,7 +7,7 @@ The presentation is created by using [present](https://pkg.go.dev/golang.org/x/t
 ```
 git clone https://github.com/arun-kandasamy/car-rental
 cd car-rental/
-go get -u golang.org/x/tools/present
+go install golang.org/x/tools/cmd/present@latest
 cd slides/
 present 
 open http://127.0.0.1:3999 in the browser to see the slides 
